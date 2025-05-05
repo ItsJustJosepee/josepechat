@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">Joseph Chat</string>
+    <string name="loginGoogle">Iniciar sesión con Google</string>
+    <string name="loginEmail"><b>Iniciar sesión con su correo electrónico</b></string>
+    <string name="contrahint">Contraseña</string>
+    <string name="correohint">Correo Electrónico</string>
+    <string name="loginEmailbtn">Iniciar Sesión</string>
+    <string name="SignedIn">ya haz iniciado sesión</string>
+    <string name="newAcc">Crear Cuenta</string>
+    <string name="obligData">El correo y contraseña es obligatorio</string>
+</resources>
