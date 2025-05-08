@@ -4,32 +4,51 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.*
+import kotlinx.coroutines.tasks.await
+import com.josephdev.josephchat.ActivityUtils.openActivityAndClear
 class SplashActivity : ComponentActivity() {
+
     private lateinit var googleAuthClient: GoogleAuthClient
+    private val firestore = FirebaseFirestore.getInstance()
+    private val auth = FirebaseAuth.getInstance()
+
     @OptIn(DelicateCoroutinesApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
-        // Mostrar el splash mientras carga
         installSplashScreen()
-
         super.onCreate(savedInstanceState)
 
-        // Inicializa el cliente de autenticación de Google
         googleAuthClient = GoogleAuthClient(this)
 
-        // Llama a una función asíncrona para verificar el inicio de sesión
-        GlobalScope.launch {
-            if (googleAuthClient.isSingedIn()) {
-                // El usuario ya está autenticado, redirigir a la pantalla principal
-                startActivity(Intent(this@SplashActivity, jchat::class.java))
-            } else {
+        GlobalScope.launch(Dispatchers.Main) {
+            if (!googleAuthClient.isSignedIn()) {
+                // No está logeado, lo mandamos a jchatlogin
                 startActivity(Intent(this@SplashActivity, jchatlogin::class.java))
+            } else {
+                val user = auth.currentUser
+                if (user != null) {
+                    val uid = user.uid
+
+                    // Verificamos si el UID ya está en Firestore
+                    val userDoc = withContext(Dispatchers.IO) {
+                        firestore.collection("users").document(uid).get().await()
+                    }
+
+                    if (userDoc.exists()) {
+                        // Ya tiene datos en Firestore, lo mandamos a jchat
+                        openActivityAndClear(this@SplashActivity, jchat::class.java)
+                    } else {
+                        // No tiene username ni doc creado, lo mandamos a jchatusr
+                        openActivityAndClear(this@SplashActivity, jchatusr::class.java)
+                    }
+                } else {
+                    // Algo raro pasó, no hay currentUser
+                    openActivityAndClear(this@SplashActivity, jchatlogin::class.java)
+                }
             }
 
-            // Finalizar SplashActivity después de verificar el estado
             finish()
         }
     }
