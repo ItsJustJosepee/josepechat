@@ -1,4 +1,5 @@
 # Joseph Chat 1.2
+### [Descarga el APK aquí!](https://github.com/ItsJustJosepee/josepechat/releases/download/v1.2/Joseph.Chat.1.2.apk)
 
 **Registro de cambios completo**: https://github.com/ItsJustJosepee/josepechat/commits/v1.2
 
