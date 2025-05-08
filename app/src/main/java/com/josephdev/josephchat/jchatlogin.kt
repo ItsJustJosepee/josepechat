@@ -120,45 +120,42 @@ class jchatlogin : AppCompatActivity() {
 
     private fun registerUserWithEmailPassword(email: String, password: String) {
         val firebaseAuth = FirebaseAuth.getInstance()
-        val firestore = FirebaseFirestore.getInstance()
 
         firebaseAuth.createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    val user = firebaseAuth.currentUser
+                lifecycleScope.launch {
+                    if (task.isSuccessful) {
+                        jtoast(applicationContext, "Registrado con correo electrónico")
 
-                    if (user != null) {
-                        val userRef = firestore.collection("users").document(user.uid)
+                        val user = FirebaseAuth.getInstance().currentUser
+                        val userRef = FirebaseFirestore.getInstance().collection("users").document(user!!.uid)
+                        val snapshot = userRef.get().await()
+                        val username = snapshot.getString("username")
 
-                        val userData = hashMapOf(
-                            "uid" to user.uid,
-                            "email" to user.email,
-                            "photoUrl" to user.photoUrl?.toString(),
-                            "name" to user.displayName,
-                            "createdAt" to FieldValue.serverTimestamp()
-                        )
-
-                        userRef.set(userData, SetOptions.merge())
-
-                        FirebaseMessaging.getInstance().token.addOnCompleteListener { tokenTask ->
-                            if (tokenTask.isSuccessful) {
-                                val token = tokenTask.result
-                                userRef.update("fcmToken", token)
-                            } else {
-                                println("Error al obtener token FCM: ${tokenTask.exception}")
+                        if (username.isNullOrEmpty()) {
+                            openActivityAndClear(this@jchatlogin, jchatusr::class.java)
+                        } else {
+                            openActivityAndClear(this@jchatlogin, jchat::class.java)
+                            FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+                                if (task.isSuccessful) {
+                                    val token = task.result
+                                    val userId = FirebaseAuth.getInstance().currentUser?.uid
+                                    if (userId != null) {
+                                        FirebaseFirestore.getInstance().collection("users")
+                                            .document(userId)
+                                            .update("fcmToken", token)
+                                    }
+                                }
                             }
                         }
 
-                        jtoast(applicationContext, "Cuenta creada correctamente")
-                        openActivityAndClear(this, jchatusr::class.java) // 🔥 Manda a crear el username
-                    }
-
-                } else {
-                    println("Error al crear cuenta: ${task.exception?.message}")
-                    if (task.exception?.message == "The email address is already in use by another account.") {
-                        jtoast(applicationContext, "El correo electrónico ya está en uso")
                     } else {
-                        jtoast(applicationContext, "Error al crear cuenta")
+                        println("Error al crear cuenta: ${task.exception?.message}")
+                        if (task.exception?.message == "The email address is already in use by another account.") {
+                            jtoast(applicationContext, "El correo electrónico ya está en uso")
+                        } else {
+                            jtoast(applicationContext, "Error al crear cuenta")
+                        }
                     }
                 }
             }
@@ -167,48 +164,44 @@ class jchatlogin : AppCompatActivity() {
 
     private fun signInWithEmailPassword(email: String, password: String) {
         val firebaseAuth = FirebaseAuth.getInstance()
-        val firestore = FirebaseFirestore.getInstance()
 
         firebaseAuth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    val user = firebaseAuth.currentUser
+                    lifecycleScope.launch {
+                        if (task.isSuccessful) {
+                            jtoast(applicationContext, "Inició sesión con correo electrónico")
 
-                    if (user != null) {
-                        val userRef = firestore.collection("users").document(user.uid)
+                            val user = FirebaseAuth.getInstance().currentUser
+                            val userRef = FirebaseFirestore.getInstance().collection("users").document(user!!.uid)
+                            val snapshot = userRef.get().await()
+                            val username = snapshot.getString("username")
 
-                        val userData = hashMapOf(
-                            "uid" to user.uid,
-                            "email" to user.email,
-                            "photoUrl" to user.photoUrl?.toString(),
-                            "name" to user.displayName,
-                            "lastLogin" to FieldValue.serverTimestamp()
-                        )
-
-                        userRef.set(userData, SetOptions.merge())
-
-                        FirebaseMessaging.getInstance().token.addOnCompleteListener { tokenTask ->
-                            if (tokenTask.isSuccessful) {
-                                val token = tokenTask.result
-                                userRef.update("fcmToken", token)
-                            } else {
-                                println("Error al obtener token FCM: ${tokenTask.exception}")
-                            }
-                        }
-
-                        // Verifica si tiene username
-                        userRef.get().addOnSuccessListener { document ->
-                            val username = document.getString("username")
                             if (username.isNullOrEmpty()) {
-                                // No tiene username, redirigir a configuración
-                                openActivityAndClear(this, jchatusr::class.java)
+                                openActivityAndClear(this@jchatlogin, jchatusr::class.java)
                             } else {
-                                // Tiene username, redirigir al chat
-                                jtoast(applicationContext, "Inicio de sesión exitoso")
-                                openActivityAndClear(this, jchat::class.java)
+                                openActivityAndClear(this@jchatlogin, jchat::class.java)
+                                FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+                                    if (task.isSuccessful) {
+                                        val token = task.result
+                                        val userId = FirebaseAuth.getInstance().currentUser?.uid
+                                        if (userId != null) {
+                                            FirebaseFirestore.getInstance().collection("users")
+                                                .document(userId)
+                                                .update("fcmToken", token)
+                                        }
+                                    }
+                                }
+                            }
+
+                        } else {
+                            println("Error al crear cuenta: ${task.exception?.message}")
+                            if (task.exception?.message == "The email address is already in use by another account.") {
+                                jtoast(applicationContext, "El correo electrónico ya está en uso")
+                            } else {
+                                jtoast(applicationContext, "Error al crear cuenta")
                             }
                         }
-
                     }
                 } else {
                     println("Error en el inicio de sesión: ${task.exception?.message}")
