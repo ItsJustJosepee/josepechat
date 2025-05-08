@@ -8,4 +8,17 @@
     <string name="SignedIn">ya haz iniciado sesión</string>
     <string name="newAcc">Crear Cuenta</string>
     <string name="obligData">El correo y contraseña es obligatorio</string>
+    <string name="chat">Chatear</string>
+    <string name="buscar">Buscar</string>
+    <string name="config">Configuración</string>
+    <string name="logout">Cerrar sesión</string>
+    <string name="regUsr">Por favor, ingresa tu nombre de usuario:</string>
+    <string name="usrhint">Nombre de usuario</string>
+    <string name="usrBtn">Listo</string>
+    <string name="usrTaken">Ese nombre de usuario ya está en uso.</string>
+    <string name="usrErrorVerif">Error al verificar el nombre de usuario.</string>
+    <string name="usrErrorTake">Error al asignarte el nombre de usuario.</string>
+    <string name="newMsg">Escribe un mensaje</string>
+    <string name="snd">Enviar</string>
+
 </resources>
