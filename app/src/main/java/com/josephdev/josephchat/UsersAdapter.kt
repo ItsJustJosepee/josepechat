@@ -9,8 +9,6 @@ class UsersAdapter(private val onUserSelected: (String) -> Unit) :
     RecyclerView.Adapter<UsersAdapter.UserViewHolder>() {
 
     private var usersList = listOf<User>()
-
-    // Método para actualizar la lista de usuarios
     fun submitList(users: List<User>) {
         usersList = users
         notifyDataSetChanged()
