@@ -35,6 +35,7 @@
         android:id="@+id/emailInput"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:autofillHints="emailAddress"
         android:hint="@string/correohint"
         android:inputType="textEmailAddress"
         android:padding="16dp"
