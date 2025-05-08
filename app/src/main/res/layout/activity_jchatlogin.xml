@@ -12,20 +12,16 @@
         android:id="@+id/loginEmail"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="32dp"
-        android:layout_marginEnd="32dp"
         android:text="@string/loginEmail"
         android:textSize="18sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="@id/guideline" />
 
     <TextView
         android:id="@+id/validEmail"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="32dp"
-        android:layout_marginEnd="32dp"
         android:text="@string/obligData"
         android:textColor="@color/design_default_color_error"
         android:textSize="16sp"
@@ -39,16 +35,13 @@
         android:id="@+id/emailInput"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
         android:hint="@string/correohint"
         android:inputType="textEmailAddress"
         android:padding="16dp"
         android:textSize="14sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/validEmail"
-        app:layout_constraintVertical_chainStyle="packed" />
+        app:layout_constraintTop_toBottomOf="@id/validEmail" />
 
 
     <!-- EditText para la contraseña -->
@@ -56,8 +49,6 @@
         android:id="@+id/passwordInput"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
         android:autofillHints="Contraseña"
         android:hint="@string/contrahint"
         android:inputType="textPassword"
@@ -72,8 +63,6 @@
         android:id="@+id/signInButton"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
         android:padding="16dp"
         android:text="@string/loginEmailbtn"
         android:textSize="14sp"
@@ -86,8 +75,6 @@
         android:id="@+id/googleSignInButton"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
         android:padding="16dp"
         android:text="@string/loginGoogle"
         android:textSize="14sp"
@@ -100,13 +87,28 @@
         android:id="@+id/createAccountButton"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
         android:padding="16dp"
         android:text="@string/newAcc"
         android:textSize="14sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/googleSignInButton" />
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.2" />
+    <androidx.constraintlayout.widget.Group
+        android:id="@+id/mainGroup"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:constraint_referenced_ids="loginEmail,emailInput,passwordInput,signInButton,googleSignInButton" />
+    <androidx.constraintlayout.widget.Barrier
+        android:id="@+id/myBarrier"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:barrierDirection="bottom"
+        app:constraint_referenced_ids="googleSignInButton" />
 </androidx.constraintlayout.widget.ConstraintLayout>
