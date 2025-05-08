@@ -22,9 +22,7 @@ android {
         minSdk = 26
         targetSdk = 35
         versionCode = 1
-        versionName = "1.0"
-
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        versionName = "1.2"
     }
 
     signingConfigs {
@@ -70,6 +68,8 @@ dependencies {
     implementation(libs.googleid)
     implementation(libs.androidx.credentials)
     implementation(libs.core.splashscreen)
+    implementation(libs.volley)
+    implementation(libs.glide)
 
     // Otras dependencias
     implementation(libs.androidx.core.ktx)
