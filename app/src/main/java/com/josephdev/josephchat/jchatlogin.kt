@@ -1,9 +1,7 @@
 package com.josephdev.josephchat
 
-import android.app.Activity
 import android.app.NotificationChannel
 import android.app.NotificationManager
-import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
 import android.widget.EditText
@@ -20,6 +18,7 @@ import com.google.firebase.messaging.FirebaseMessaging
 import com.josephdev.josephchat.ActivityUtils.openActivityAndClear
 import com.josephdev.josephchat.ToastUtils.jtoast
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 
 class jchatlogin : AppCompatActivity() {
     private lateinit var googleAuthClient: GoogleAuthClient
@@ -62,24 +61,48 @@ class jchatlogin : AppCompatActivity() {
 
                 // Aquí agregas tu lógica de autenticación con Firebase para correo y contraseña
                 signInWithEmailPassword(email, password)
-                openActivityAndClear(this@jchatlogin, jchat::class.java)
             } catch (_: Exception) {
                 validEmail.visibility = TextView.VISIBLE
             }
         }
 
-        // Acción de "Iniciar sesión con Google"
         googleSignInButton.setOnClickListener {
             lifecycleScope.launch {
                 val result = googleAuthClient.signIn()
+
                 if (result) {
                     jtoast(applicationContext, "Inició sesión con Google")
-                    openActivityAndClear(this@jchatlogin, jchat::class.java)
+
+                    val user = FirebaseAuth.getInstance().currentUser
+                    val userRef = FirebaseFirestore.getInstance().collection("users").document(user!!.uid)
+                    val snapshot = userRef.get().await()
+                    val username = snapshot.getString("username")
+
+                    if (username.isNullOrEmpty()) {
+                        openActivityAndClear(this@jchatlogin, jchatusr::class.java)
+                    } else {
+                        openActivityAndClear(this@jchatlogin, jchat::class.java)
+                        FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+                            if (task.isSuccessful) {
+                                val token = task.result
+                                val userId = FirebaseAuth.getInstance().currentUser?.uid
+                                if (userId != null) {
+                                    FirebaseFirestore.getInstance().collection("users")
+                                        .document(userId)
+                                        .update("fcmToken", token)
+                                }
+                            }
+                        }
+                    }
+
                 } else {
                     jtoast(applicationContext, "Fallo al iniciar sesión con Google")
                 }
             }
         }
+
+
+
 
         // Acción de "Crear cuenta"
         createAccountButton.setOnClickListener {
@@ -89,8 +112,6 @@ class jchatlogin : AppCompatActivity() {
                 validEmail.visibility = TextView.GONE
 
                 registerUserWithEmailPassword(email, password)
-                jtoast(applicationContext, "Fallo al iniciar sesión con Google")
-                openActivityAndClear(this, jchat::class.java)
             } catch (_: Exception) {
                 validEmail.visibility = TextView.VISIBLE
             }
@@ -129,11 +150,16 @@ class jchatlogin : AppCompatActivity() {
                         }
 
                         jtoast(applicationContext, "Cuenta creada correctamente")
+                        openActivityAndClear(this, jchatusr::class.java) // 🔥 Manda a crear el username
                     }
 
                 } else {
-                    jtoast(applicationContext, "Error al crear cuenta")
                     println("Error al crear cuenta: ${task.exception?.message}")
+                    if (task.exception?.message == "The email address is already in use by another account.") {
+                        jtoast(applicationContext, "El correo electrónico ya está en uso")
+                    } else {
+                        jtoast(applicationContext, "Error al crear cuenta")
+                    }
                 }
             }
     }
@@ -149,7 +175,6 @@ class jchatlogin : AppCompatActivity() {
                     val user = firebaseAuth.currentUser
 
                     if (user != null) {
-                        // Guardar info del usuario en Firestore
                         val userRef = firestore.collection("users").document(user.uid)
 
                         val userData = hashMapOf(
@@ -162,7 +187,6 @@ class jchatlogin : AppCompatActivity() {
 
                         userRef.set(userData, SetOptions.merge())
 
-                        // Obtener y guardar token FCM
                         FirebaseMessaging.getInstance().token.addOnCompleteListener { tokenTask ->
                             if (tokenTask.isSuccessful) {
                                 val token = tokenTask.result
@@ -172,17 +196,31 @@ class jchatlogin : AppCompatActivity() {
                             }
                         }
 
-                        jtoast(applicationContext, "Inicio de sesión exitoso")
-                        // Aquí podrías redirigir a otra actividad si quieres
-                        openActivityAndClear(this, jchat::class.java)
-                    }
+                        // Verifica si tiene username
+                        userRef.get().addOnSuccessListener { document ->
+                            val username = document.getString("username")
+                            if (username.isNullOrEmpty()) {
+                                // No tiene username, redirigir a configuración
+                                openActivityAndClear(this, jchatusr::class.java)
+                            } else {
+                                // Tiene username, redirigir al chat
+                                jtoast(applicationContext, "Inicio de sesión exitoso")
+                                openActivityAndClear(this, jchat::class.java)
+                            }
+                        }
 
+                    }
                 } else {
-                    jtoast(applicationContext, "Error en el inicio de sesión")
                     println("Error en el inicio de sesión: ${task.exception?.message}")
+                    if (task.exception?.message == "The supplied auth credential is incorrect, malformed or has expired.") {
+                        jtoast(applicationContext, "Contraseña o correo incorrectos")
+                    } else {
+                        jtoast(applicationContext, "Error en el inicio de sesión")
+                    }
                 }
             }
     }
+
 
 }
 
